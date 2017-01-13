@@ -1,4 +1,19 @@
-const webpack = require('webpack');
+var webpack = require('webpack');
+var path = require('path');
+var projectRoot = path.resolve(__dirname, './');
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
+
+var plugins = [
+    new webpack.BannerPlugin('This file is created by zouweiyun'),
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+        warnings: false
+      }
+    }),
+    new ExtractTextPlugin(path.join('main.css'), {
+      allChunks: true
+    })
+  ]
 
 module.exports = {
   entry: './src/entry.js',
@@ -8,10 +23,28 @@ module.exports = {
   },
   module: {
     loaders: [
-      {test: /\.css$/, loader: 'style!css'}
+      { 
+        test: /\.css$/, 
+        loader: ExtractTextPlugin.extract(
+          'style-loader',
+          'css-loader?-autoprefixer!postcss-loader'
+        )
+      }, 
+      {
+        test: /\.js$/,
+        loader: 'babel',
+        query: {
+          presets: ['es2015']
+        },
+        include: projectRoot,
+        exclude: /node_modules/
+      }
     ]
   },
-  plugins: [
-    new webpack.BannerPlugin('This file is created by zouweiyun')
-  ]
+  postcss:()=>{
+    return [
+      require('autoprefixer')
+    ];
+  },
+  plugins: plugins
 }
